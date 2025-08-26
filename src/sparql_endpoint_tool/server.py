@@ -106,6 +106,12 @@ async def index(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
 
+@app.get("/help", response_class=HTMLResponse)
+async def help_page(request: Request):
+    """Serve help and documentation page."""
+    return templates.TemplateResponse("help.html", {"request": request})
+
+
 @app.post("/sparql")
 @app.get("/sparql")
 async def sparql_endpoint(

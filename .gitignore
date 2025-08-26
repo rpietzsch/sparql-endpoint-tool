@@ -29,3 +29,7 @@ Thumbs.db
 .coverage
 htmlcov/
 .pytest_cache/
+
+# (local) configuration
+config.toml
+sparql-config.toml
