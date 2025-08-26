@@ -2,6 +2,8 @@
 
 import click
 import uvicorn
+import socket
+import psutil
 from pathlib import Path
 from typing import List, Optional
 
@@ -42,6 +44,26 @@ def main(files: tuple[Path, ...], host: str, port: int, reload: bool, rdf_format
     os.environ['SPARQL_FILES'] = ','.join(str(f) for f in file_list)
     if rdf_format:
         os.environ['SPARQL_FORMAT'] = rdf_format
+    
+    # Check if port is already in use
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        result = sock.connect_ex((host, port))
+        if result == 0:
+            # Port is in use, find which process
+            for proc in psutil.process_iter(['pid', 'name']):
+                try:
+                    for conn in proc.connections():
+                        if conn.laddr.port == port and conn.status == 'LISTEN':
+                            click.echo(f"Error: Port {port} is already in use by process {proc.info['name']} (PID: {proc.info['pid']})", err=True)
+                            click.echo(f"To kill it: kill {proc.info['pid']}", err=True)
+                            raise click.Abort()
+                except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                    continue
+            click.echo(f"Error: Port {port} is already in use by unknown process", err=True)
+            raise click.Abort()
+    finally:
+        sock.close()
     
     click.echo(f"Server starting at http://{host}:{port}")
     click.echo(f"YASGUI interface available at http://{host}:{port}")

@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 from typing import Optional, List
 import logging
+import psutil
 
 from fastapi import FastAPI, HTTPException, Request, Form
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -82,6 +83,14 @@ async def startup_event():
     """Load RDF files on startup."""
     load_rdf_files()
     logger.info(f"Graph loaded with {len(graph)} triples")
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Log process info on shutdown."""
+    current_process = psutil.Process()
+    logger.info(f"Shutting down SPARQL endpoint (PID: {current_process.pid}, Process: {current_process.name()})")
+    logger.info(f"To kill this process: kill {current_process.pid}")
 
 
 @app.get("/", response_class=HTMLResponse)
