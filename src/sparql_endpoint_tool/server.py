@@ -13,6 +13,13 @@ from fastapi.templating import Jinja2Templates
 from rdflib import Graph, Namespace
 from rdflib.plugins.stores.memory import Memory
 
+# Import chat functionality
+from .chat_endpoints import (
+    ChatRequest, ChatResponse, QueryInterpretationRequest, QueryGenerationRequest,
+    interpret_query, generate_query, chat_conversation, get_ai_status
+)
+from .config import get_config
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -201,3 +208,29 @@ async def get_prefixes():
 async def health_check():
     """Health check endpoint."""
     return JSONResponse({"status": "healthy", "triples": len(graph)})
+
+
+# AI Chat Endpoints
+
+@app.get("/ai/status")
+async def ai_status():
+    """Get AI service status and configuration."""
+    return JSONResponse(get_ai_status())
+
+
+@app.post("/ai/interpret", response_model=ChatResponse)
+async def ai_interpret_query(request: QueryInterpretationRequest):
+    """Interpret a SPARQL query using AI."""
+    return await interpret_query(graph, request)
+
+
+@app.post("/ai/generate", response_model=ChatResponse)
+async def ai_generate_query(request: QueryGenerationRequest):
+    """Generate a SPARQL query from natural language description."""
+    return await generate_query(graph, request)
+
+
+@app.post("/ai/chat", response_model=ChatResponse)
+async def ai_chat(request: ChatRequest):
+    """General AI chat with SPARQL context."""
+    return await chat_conversation(graph, request)

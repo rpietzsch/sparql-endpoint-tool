@@ -39,20 +39,217 @@
         .info-item strong {
             color: #2c3e50;
         }
+        
+        /* Main layout container */
+        .main-container {
+            display: flex;
+            gap: 20px;
+            height: 700px;
+        }
+        
+        /* YASGUI container */
         .yasgui-container {
+            flex: 1;
             background-color: white;
             border-radius: 5px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             padding: 20px;
-            min-height: 600px;
+            min-width: 600px;
         }
         #yasgui {
-            height: 600px;
+            height: 100%;
         }
+        
+        /* AI Chat container */
+        .chat-container {
+            width: 400px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chat-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #e0e0e0;
+            background-color: #f8f9fa;
+            border-radius: 5px 5px 0 0;
+        }
+        
+        .chat-header h3 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .provider-selector {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+        
+        .provider-selector select {
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0;
+            max-height: 500px;
+        }
+        
+        .chat-message {
+            padding: 12px 20px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .chat-message.user {
+            background-color: #e3f2fd;
+        }
+        
+        .chat-message.assistant {
+            background-color: #f5f5f5;
+        }
+        
+        .chat-message.system {
+            background-color: #fff3cd;
+            font-style: italic;
+            font-size: 14px;
+        }
+        
+        .message-content {
+            margin: 0;
+            word-wrap: break-word;
+        }
+        
+        .message-actions {
+            margin-top: 8px;
+            display: flex;
+            gap: 8px;
+        }
+        
+        .btn-small {
+            padding: 4px 8px;
+            font-size: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        
+        .btn-small:hover {
+            background-color: #0056b3;
+        }
+        
+        .btn-small.secondary {
+            background-color: #6c757d;
+        }
+        
+        .btn-small.secondary:hover {
+            background-color: #545b62;
+        }
+        
+        .chat-input {
+            padding: 15px 20px;
+            border-top: 1px solid #e0e0e0;
+            background-color: #f8f9fa;
+            border-radius: 0 0 5px 5px;
+        }
+        
+        .chat-input-row {
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+        }
+        
+        .chat-input textarea {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: vertical;
+            min-height: 40px;
+            max-height: 120px;
+        }
+        
+        .chat-input button {
+            padding: 8px 16px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .chat-input button:hover {
+            background-color: #218838;
+        }
+        
+        .chat-input button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        
         .loading {
             text-align: center;
             padding: 50px;
             color: #666;
+        }
+        
+        .error-message {
+            color: #dc3545;
+            background-color: #f8d7da;
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin: 8px 0;
+            font-size: 14px;
+        }
+        
+        .ai-status {
+            font-size: 12px;
+            color: #6c757d;
+        }
+        
+        .ai-status.enabled {
+            color: #28a745;
+        }
+        
+        .ai-status.disabled {
+            color: #dc3545;
+        }
+        
+        pre {
+            background-color: #f8f9fa;
+            padding: 8px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 13px;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 1200px) {
+            .main-container {
+                flex-direction: column;
+                height: auto;
+            }
+            
+            .chat-container {
+                width: 100%;
+                height: 400px;
+            }
+            
+            .yasgui-container {
+                min-width: auto;
+                height: 600px;
+            }
         }
     </style>
 </head>
@@ -67,14 +264,63 @@
         </div>
     </div>
 
-    <div class="yasgui-container">
-        <div id="yasgui">
-            <div class="loading">Loading YASGUI interface...</div>
+    <div class="main-container">
+        <div class="yasgui-container">
+            <div id="yasgui">
+                <div class="loading">Loading YASGUI interface...</div>
+            </div>
+        </div>
+
+        <div class="chat-container">
+            <div class="chat-header">
+                <h3>🤖 AI Assistant</h3>
+                <div class="provider-selector">
+                    <label for="ai-provider">Provider:</label>
+                    <select id="ai-provider">
+                        <option value="anthropic">Claude (Anthropic)</option>
+                        <option value="openai">GPT (OpenAI)</option>
+                    </select>
+                    <span id="ai-status" class="ai-status">Loading...</span>
+                </div>
+            </div>
+
+            <div class="chat-messages" id="chat-messages">
+                <div class="chat-message system">
+                    <p class="message-content">👋 Hi! I'm your AI assistant for SPARQL queries. I can:</p>
+                    <ul class="message-content">
+                        <li>Explain your queries in natural language</li>
+                        <li>Generate queries from descriptions</li>
+                        <li>Help refine and improve existing queries</li>
+                        <li>Answer questions about SPARQL syntax</li>
+                    </ul>
+                    <p class="message-content">Try typing "explain my query" or describe what you want to find!</p>
+                </div>
+            </div>
+
+            <div class="chat-input">
+                <div class="chat-input-row">
+                    <textarea 
+                        id="chat-input-text" 
+                        placeholder="Ask about SPARQL, request a query, or get help..."
+                        rows="2"
+                    ></textarea>
+                    <button id="send-chat" onclick="sendChatMessage()">Send</button>
+                </div>
+                <div id="chat-actions" style="margin-top: 8px;">
+                    <button class="btn-small secondary" onclick="explainCurrentQuery()">Explain Query</button>
+                    <button class="btn-small secondary" onclick="clearChat()">Clear Chat</button>
+                </div>
+            </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@triply/yasgui@4.2.28/build/yasgui.min.js"></script>
     <script>
+        // Global variables
+        let yasgui;
+        let conversationHistory = [];
+        let currentProvider = 'anthropic';
+        
         // Load graph information
         fetch('/info')
             .then(response => response.json())
@@ -88,6 +334,41 @@
             .catch(error => {
                 document.getElementById('graph-info').innerHTML = 'Error loading graph info';
                 console.error('Error loading graph info:', error);
+            });
+
+        // Load AI status
+        fetch('/ai/status')
+            .then(response => response.json())
+            .then(data => {
+                const statusEl = document.getElementById('ai-status');
+                const providerSelect = document.getElementById('ai-provider');
+                
+                if (data.enabled && data.providers.length > 0) {
+                    statusEl.textContent = `✓ ${data.message}`;
+                    statusEl.className = 'ai-status enabled';
+                    
+                    // Update provider options
+                    providerSelect.innerHTML = '';
+                    data.providers.forEach(provider => {
+                        const option = document.createElement('option');
+                        option.value = provider;
+                        option.textContent = provider === 'anthropic' ? 'Claude (Anthropic)' : 'GPT (OpenAI)';
+                        if (provider === data.default_provider) {
+                            option.selected = true;
+                            currentProvider = provider;
+                        }
+                        providerSelect.appendChild(option);
+                    });
+                } else {
+                    statusEl.textContent = `✗ ${data.message}`;
+                    statusEl.className = 'ai-status disabled';
+                    document.getElementById('send-chat').disabled = true;
+                }
+            })
+            .catch(error => {
+                document.getElementById('ai-status').textContent = '✗ Connection error';
+                document.getElementById('ai-status').className = 'ai-status disabled';
+                console.error('Error loading AI status:', error);
             });
 
         // Initialize YASGUI after DOM is ready
@@ -109,12 +390,16 @@
             }
             
             // Initialize YASGUI
-            const yasgui = new Yasgui(document.getElementById("yasgui"), {
+            yasgui = new Yasgui(document.getElementById("yasgui"), {
                 requestConfig: {
                     endpoint: "/sparql",
                     method: "POST"
                 },
-                copyEndpointOnNewTab: true
+                copyEndpointOnNewTab: true,
+                yasqe: {
+                    showQueryButton: true,
+                    collapsePrefixes: true
+                }
             });
 
             // Set a default query with prefixes
@@ -128,6 +413,14 @@ LIMIT 10`;
             const tab = yasgui.getTab();
             if (tab) {
                 tab.setQuery(defaultQuery);
+                
+                // Collapse prefixes after setting query
+                setTimeout(() => {
+                    const yasqe = tab.getYasqe();
+                    if (yasqe && yasqe.collapsePrefixes) {
+                        yasqe.collapsePrefixes(true);
+                    }
+                }, 100);
             }
 
             // Add prefixes to new tabs
@@ -138,8 +431,197 @@ LIMIT 10`;
                         tab.setQuery(prefixString + (currentQuery || 'SELECT * WHERE {\n  ?s ?p ?o\n} LIMIT 10'));
                     }
                 }
+                
+                // Collapse prefixes on new tabs too
+                setTimeout(() => {
+                    const yasqe = tab.getYasqe();
+                    if (yasqe && yasqe.collapsePrefixes) {
+                        yasqe.collapsePrefixes(true);
+                    }
+                }, 100);
             });
+            
+            // Setup event listeners
+            setupChatEventListeners();
         });
+        
+        function setupChatEventListeners() {
+            // Provider selector change
+            document.getElementById('ai-provider').addEventListener('change', function() {
+                currentProvider = this.value;
+            });
+            
+            // Enter key in chat input
+            document.getElementById('chat-input-text').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendChatMessage();
+                }
+            });
+        }
+        
+        function getCurrentQuery() {
+            const tab = yasgui.getTab();
+            return tab ? tab.getQuery() : '';
+        }
+        
+        function setCurrentQuery(query) {
+            const tab = yasgui.getTab();
+            if (tab && query) {
+                tab.setQuery(query);
+            }
+        }
+        
+        function addChatMessage(role, content, actions = null) {
+            const messagesContainer = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${role}`;
+            
+            const contentP = document.createElement('p');
+            contentP.className = 'message-content';
+            contentP.innerHTML = formatChatMessage(content);
+            messageDiv.appendChild(contentP);
+            
+            if (actions) {
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'message-actions';
+                actions.forEach(action => {
+                    const button = document.createElement('button');
+                    button.className = 'btn-small';
+                    button.textContent = action.text;
+                    button.onclick = action.onclick;
+                    actionsDiv.appendChild(button);
+                });
+                messageDiv.appendChild(actionsDiv);
+            }
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        function formatChatMessage(content) {
+            // Format SPARQL code blocks
+            content = content.replace(/```sparql\n([\s\S]*?)\n```/g, '<pre><code>$1</code></pre>');
+            content = content.replace(/```\n([\s\S]*?)\n```/g, '<pre><code>$1</code></pre>');
+            
+            // Format inline code
+            content = content.replace(/`([^`]+)`/g, '<code>$1</code>');
+            
+            // Convert newlines to <br>
+            content = content.replace(/\n/g, '<br>');
+            
+            return content;
+        }
+        
+        async function sendChatMessage() {
+            const input = document.getElementById('chat-input-text');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Disable input while processing
+            const sendButton = document.getElementById('send-chat');
+            sendButton.disabled = true;
+            input.disabled = true;
+            
+            // Add user message to chat
+            addChatMessage('user', message);
+            conversationHistory.push({role: 'user', content: message});
+            
+            // Clear input
+            input.value = '';
+            
+            try {
+                // Get current query context
+                const currentQuery = getCurrentQuery();
+                
+                // Send request to AI
+                const response = await fetch('/ai/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        current_query: currentQuery,
+                        provider: currentProvider,
+                        conversation_history: conversationHistory.slice(-10) // Keep last 10 messages
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                // Add assistant response
+                const actions = [];
+                if (data.suggested_query) {
+                    actions.push({
+                        text: 'Use Query',
+                        onclick: () => setCurrentQuery(data.suggested_query)
+                    });
+                }
+                
+                addChatMessage('assistant', data.response, actions.length > 0 ? actions : null);
+                conversationHistory.push({role: 'assistant', content: data.response});
+                
+            } catch (error) {
+                addChatMessage('system', `Error: ${error.message}`);
+                console.error('Chat error:', error);
+            } finally {
+                // Re-enable input
+                sendButton.disabled = false;
+                input.disabled = false;
+                input.focus();
+            }
+        }
+        
+        async function explainCurrentQuery() {
+            const query = getCurrentQuery();
+            if (!query.trim()) {
+                addChatMessage('system', 'No query to explain. Please write a SPARQL query first.');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/ai/interpret', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        query: query,
+                        provider: currentProvider
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                addChatMessage('assistant', data.response);
+                
+            } catch (error) {
+                addChatMessage('system', `Error explaining query: ${error.message}`);
+                console.error('Query explanation error:', error);
+            }
+        }
+        
+        function clearChat() {
+            const messagesContainer = document.getElementById('chat-messages');
+            const systemMessages = messagesContainer.querySelectorAll('.chat-message.system');
+            
+            // Clear all messages except the welcome message
+            messagesContainer.innerHTML = '';
+            if (systemMessages.length > 0) {
+                messagesContainer.appendChild(systemMessages[0]);
+            }
+            
+            conversationHistory = [];
+        }
     </script>
 </body>
 </html>
