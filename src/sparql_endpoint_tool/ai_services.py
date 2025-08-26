@@ -71,12 +71,31 @@ class OpenAIService(AIService):
             # Convert messages to OpenAI format
             openai_messages = [msg.to_dict() for msg in messages]
             
-            response = await self.client.chat.completions.create(
-                model=self.model,
-                messages=openai_messages,
-                max_tokens=max_tokens or 2000,
-                temperature=temperature or 0.1
-            )
+            # Build completion parameters
+            completion_params = {
+                "model": self.model,
+                "messages": openai_messages
+            }
+            
+            # Add max_completion_tokens if specified
+            if max_tokens:
+                completion_params["max_completion_tokens"] = max_tokens
+            
+            # Add temperature if specified
+            temp_value = temperature or 0.1
+            if temp_value != 1.0:  # Only add if different from default
+                completion_params["temperature"] = temp_value
+            
+            try:
+                response = await self.client.chat.completions.create(**completion_params)
+            except Exception as temp_error:
+                # If temperature is unsupported, retry without it
+                if "temperature" in str(temp_error) and "temperature" in completion_params:
+                    logger.warning(f"Temperature not supported for model {self.model}, retrying without temperature")
+                    del completion_params["temperature"]
+                    response = await self.client.chat.completions.create(**completion_params)
+                else:
+                    raise temp_error
             
             return response.choices[0].message.content
             
