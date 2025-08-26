@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPARQL Endpoint Tool</title>
+    <link href="https://cdn.jsdelivr.net/npm/@triply/yasgui@4.2.28/build/yasgui.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px;
+            margin: -20px -20px 20px -20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+        }
+        .header p {
+            margin: 5px 0 0 0;
+            opacity: 0.8;
+        }
+        .info-panel {
+            background-color: white;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .info-item {
+            margin-bottom: 10px;
+        }
+        .info-item strong {
+            color: #2c3e50;
+        }
+        .yasgui-container {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
+            min-height: 600px;
+        }
+        #yasgui {
+            height: 600px;
+        }
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔍 SPARQL Endpoint Tool (Ad-hoc endpoint with web-interface)</h1>
+    </div>
+
+    <div class="info-panel">
+        <div class="info-item">
+            <strong>Endpoint URL:</strong> <code>/sparql</code> | <strong>Graph Status:</strong> <span id="graph-info">Loading...</span>
+        </div>
+    </div>
+
+    <div class="yasgui-container">
+        <div id="yasgui">
+            <div class="loading">Loading YASGUI interface...</div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@triply/yasgui@4.2.28/build/yasgui.min.js"></script>
+    <script>
+        // Load graph information
+        fetch('/info')
+            .then(response => response.json())
+            .then(data => {
+                const graphInfo = document.getElementById('graph-info');
+                graphInfo.innerHTML = `${data.triples_count} triples loaded`;
+                if (data.namespaces && Object.keys(data.namespaces).length > 0) {
+                    graphInfo.innerHTML += ` | ${Object.keys(data.namespaces).length} namespaces`;
+                }
+            })
+            .catch(error => {
+                document.getElementById('graph-info').innerHTML = 'Error loading graph info';
+                console.error('Error loading graph info:', error);
+            });
+
+        // Initialize YASGUI after DOM is ready
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Remove loading message
+            const loadingDiv = document.querySelector('.loading');
+            if (loadingDiv) {
+                loadingDiv.remove();
+            }
+            
+            // Fetch prefixes from the server
+            let prefixString = '';
+            try {
+                const prefixResponse = await fetch('/prefixes');
+                const prefixData = await prefixResponse.json();
+                prefixString = prefixData.sparql_prefixes + '\n\n';
+            } catch (error) {
+                console.warn('Could not load prefixes:', error);
+            }
+            
+            // Initialize YASGUI
+            const yasgui = new Yasgui(document.getElementById("yasgui"), {
+                requestConfig: {
+                    endpoint: "/sparql",
+                    method: "POST"
+                },
+                copyEndpointOnNewTab: true
+            });
+
+            // Set a default query with prefixes
+            const defaultQuery = `${prefixString}SELECT DISTINCT ?subject ?predicate ?object 
+WHERE { 
+    ?subject ?predicate ?object 
+} 
+LIMIT 10`;
+
+            // Set the default query in the first tab
+            const tab = yasgui.getTab();
+            if (tab) {
+                tab.setQuery(defaultQuery);
+            }
+
+            // Add prefixes to new tabs
+            yasgui.on('tabAdd', function(instance, tab) {
+                if (prefixString) {
+                    const currentQuery = tab.getQuery();
+                    if (!currentQuery || !currentQuery.includes('PREFIX')) {
+                        tab.setQuery(prefixString + (currentQuery || 'SELECT * WHERE {\n  ?s ?p ?o\n} LIMIT 10'));
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
